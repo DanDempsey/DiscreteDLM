@@ -30,9 +30,31 @@ You can install the development version of DiscreteDLM like so:
 
 ## Using DiscreteDLM
 
-The idea is we take a dataset with longitudinal (binary or count) response and predictor data, and we want to fit the appropriate regression model to determine how the lags of the predictor affect the value of the response. TBD...
+The idea is we take a dataset with longitudinal (binary or count) response and predictor data, and we want to fit the appropriate regression model to determine how the lags of the predictor affect the value of the response.
 
-```{r example}
-library(DiscreteDLM)
+First, we take a longitudinal dataset and prepare it for a DLM using the dataframe_DLM function:
+
+```{r lagged_dataframe}
+library( DiscreteDLM )
+library( magrittr )
+library( mice )
+
+set.seed( 1001 )
+X <- complete( mice(dlnm::chicagoNMMAPS) )
+N <- nrow( X )
+
+### Create desired variables
+X$dow <- as.factor( X$dow )
+seasons <- c( rep('Winter', 2), rep('Spring', 3), rep('Summer', 3), rep('Autumn', 3), 'Winter' )
+X$season <- seasons[X$month] %>% as.factor
+
+### Set static and dynamic variables
+X <- dplyr::select( X, c('death', 'dow', 'season', 'temp', 'dptp', 'rhum', 'pm10', 'o3') )
+X_lagged <- dataframe_DLM(X, lag = 40, df = 7, dynamic_vars = c('temp', 'dptp', 'rhum', 'pm10', 'o3'))
 ```
 
+Now we can fit the model to the death (count) data.
+
+```{r NB_regression}
+nb_fit <- NB_MCMC( death ~ ., data = X_lagged )
+```
