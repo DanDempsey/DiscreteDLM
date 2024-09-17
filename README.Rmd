@@ -1,0 +1,38 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# DiscreteDLM
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+DiscreteDLM contains functions that fits Bayesian Distributed Lag Models when the response variable is either a count or binary. The package includes an implementation of Bayesian quantile binary regression (for binary response data) and negative-binomial regression (for count response data). Additionally, these functions implement variable uncertainty inference for each predictor. These functions are written generically, which means that they can be applied to any problem. For distributed lag models, we have included a function that creates a lagged version of the dataset, which borrows from the dlnm package.
+
+## Installation
+
+You can install the development version of DiscreteDLM like so:
+
+``` r
+# devtools::install_github("DanDempsey/DiscreteDLM")
+```
+
+## Using DiscreteDLM
+
+The idea is we take a dataset with longitudinal (binary or count) response and predictor data, and we want to fit the appropriate regression model to determine how the lags of the predictor affect the value of the response. TBD...
+
+```{r example}
+library(DiscreteDLM)
+```
+

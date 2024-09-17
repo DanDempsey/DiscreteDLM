@@ -1,0 +1,7 @@
+This package includes code derived from the ald package. Link to CRAN webpage: https://cran.r-project.org/web/packages/ald/index.html
+
+The derived code is adapted from the functions around deriving statistics/random values from the ALD distribution.
+
+Original authorship of the derived code belongs to Christian E. Galarza and Victor H. Lachos.
+
+All additional contributions are licensed under the GPL-3 license.
