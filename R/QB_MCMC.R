@@ -24,9 +24,13 @@
 #' @author Daniel Dempsey (<dempsed6@tcd.ie>)
 #' @examples
 #' set.seed( 100 )
-#' Pima_ex <- MASS::Pima.tr
-#' Pima_ex$type <- ifelse( MASS::Pima.tr$type == 'Yes', 1, 0 )
-#' pima_mcmc <- QB_MCMC( type ~ ., data = Pima_ex )
+#' binary_response <- dlnm::chicagoNMMAPS$cvd > 65
+#' predictors <- dplyr::select( dlnm::chicagoNMMAPS, c('dow', 'temp', 'dptp', 'o3') )
+#' X <- cbind( binary_response, predictors )
+#' X <- na.omit( X )
+#' arglag <- list( fun = 'bs', df = 4 )
+#' DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
+#' myfit <- QB_MCMC( binary_response ~ ., data = X )
 #' @import statmod
 #' @import mvtnorm
 #' @import utils
@@ -39,8 +43,8 @@
 #source( 'Code/Main_Software/ALD.R' ) # ALD functions
 
 ### Main wrapper function for performing MCMC-based inference for the Negative Binomial DLM
-QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 5000,
-                     nburn = 5000, thin = 1, prior_beta_mu = 0, prior_beta_sigma = 100,
+QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
+                     nburn = 1000, thin = 1, prior_beta_mu = 0, prior_beta_sigma = 100,
                      prior_gamma_p = 0.5, init_beta = 0, init_gamma = FALSE ) {
 
   ### Initialize
@@ -62,7 +66,7 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 5000,
 
   # Prepare priors and associated statistics used in the algorithm
   len_check <- function( x, nm, gamma_correction = FALSE ) {
-    err_msg <- paste0( nm, ' must be of length 1 or length equal to the number of predictors. There are ', nvar, ' predictors.' )
+    err_msg <- paste0( nm, ' must be of length 1 or length equal to the number of predictors. There are ', nvar, ' predictors.\n' )
     lenx <- length( x )
     if ( lenx == 1 ) {
       res <- rep(x, nvar)
@@ -85,11 +89,11 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 5000,
       prior_beta_sigma <- diag( prior_beta_sigma, nvar )
     }
     else {
-      stop( paste0('prior_beta_sigma must be a numeric of length one, or a square matrix of dimension equal to the number of predictors. There are ', nvar, ' predictors.') )
+      stop( paste0('prior_beta_sigma must be a numeric of length one, or a square matrix of dimension equal to the number of predictors. There are ', nvar, ' predictors.\n') )
     }
   }
   if ( !all(nvar %in% dim(prior_beta_sigma)) ) {
-    stop( paste0('prior_beta_sigma matrix must be square of dimension equal to the number of predictors. There are ', nvar, ' predictors.') )
+    stop( paste0('prior_beta_sigma matrix must be square of dimension equal to the number of predictors. There are ', nvar, ' predictors.\n') )
   }
 
   V0i_full <- chol2inv( chol(prior_beta_sigma) )
@@ -97,7 +101,7 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 5000,
 
   if ( !init_gamma[1] ) {
     init_gamma[1] <- TRUE
-    warning( 'The first element of the gamma starting value must be TRUE. This has been corrected.' )
+    warning( 'The first element of the gamma starting value must be TRUE. This has been corrected.\n' )
   }
 
   # Parameter initialization
@@ -207,14 +211,15 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 5000,
   }
 
   ### Filter Markov chain and return result
-  cat( 'Algorithm complete. Returning result.\n' )
+  cat( '\nAlgorithm complete. Returning result.\n' )
 
   keep <- seq( nburn + 1, MCMC_length, thin )
   col_inds <- sapply(var_split, '[', 1)
   gamma_trunc <- gammares[keep, col_inds]
 
-  list( beta = betares[keep, ], gamma = gammares[keep, ], quantile = quantile,
-        X = X_full, y = y )
+  res <- list( beta = betares[keep, ], gamma = gammares[keep, ], quantile = quantile, X = X_full, y = y )
+  class( res ) <- c( 'MCMC_DLM', 'QB_MCMC' )
+  res
 
 }
 

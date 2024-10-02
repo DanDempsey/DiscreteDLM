@@ -8,8 +8,8 @@ QB_MCMC(
   formula,
   data = NULL,
   quantile = 0.5,
-  nsamp = 5000,
-  nburn = 5000,
+  nsamp = 1000,
+  nburn = 1000,
   thin = 1,
   prior_beta_mu = 0,
   prior_beta_sigma = 100,
@@ -54,9 +54,13 @@ As this is a Bayesian model, priors must be specified. Beta has a Gaussian prior
 }
 \examples{
 set.seed( 100 )
-Pima_ex <- MASS::Pima.tr
-Pima_ex$type <- ifelse( MASS::Pima.tr$type == 'Yes', 1, 0 )
-pima_mcmc <- QB_MCMC( type ~ ., data = Pima_ex )
+binary_response <- dlnm::chicagoNMMAPS$cvd > 65
+predictors <- dplyr::select( dlnm::chicagoNMMAPS, c('dow', 'temp', 'dptp', 'o3') )
+X <- cbind( binary_response, predictors )
+X <- na.omit( X )
+arglag <- list( fun = 'bs', df = 4 )
+DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
+myfit <- QB_MCMC( binary_response ~ ., data = X )
 }
 \references{
 Dries F. Benoit and Dirk Van den Poel. "bayesQR: A Bayesian approach to quantile regression." Journal of Statistical Software 76 (2017): 1-32.

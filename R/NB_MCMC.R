@@ -27,8 +27,11 @@
 #' Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." (2006): 145-168.
 #' @author Daniel Dempsey (<dempsed6@tcd.ie>)
 #' @examples
-#' set.seed( 100 )
-#' quine_mcmc <- NB_MCMC( Days ~ Sex/(Age + Eth*Lrn), data = MASS::quine )
+#' X <- dplyr::select( dlnm::chicagoNMMAPS, c('cvd', 'dow', 'temp', 'dptp', 'o3') )
+#' X <- na.omit( X )
+#' arglag <- list( fun = 'bs', df = 4 )
+#' DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
+#' myfit <- NB_MCMC( cvd ~ ., data = DLM_dat )
 #' @import BayesLogit
 #' @import utils
 #' @importFrom MASS area
@@ -41,7 +44,7 @@
 #dyn.load( 'Code/Main_Software/C_funs/PSI_FUN.so' ) # C function used when updating the NB stopping parameter
 
 ### Main wrapper function for performing MCMC-based inference for the Negative Binomial model
-NB_MCMC <- function( formula, data = NULL, nsamp = 5000, nburn = 5000, thin = 1,
+NB_MCMC <- function( formula, data = NULL, nsamp = 1000, nburn = 1000, thin = 1,
                      prior_beta_mu = 0, prior_beta_sigma = 100, prior_gamma_p = 0.5,
                      prior_xi_shape = 2, prior_xi_scale = 1/50, init_beta = 0,
                      init_gamma = FALSE, init_xi = 1 ) {
@@ -65,7 +68,7 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 5000, nburn = 5000, thin = 1,
 
   # Prepare priors and associated statistics used in the algorithm
   len_check <- function( x, nm, gamma_correction = FALSE ) {
-    err_msg <- paste0( nm, ' must be of length 1 or length equal to the number of predictors. There are ', nvar, ' predictors.' )
+    err_msg <- paste0( nm, ' must be of length 1 or length equal to the number of predictors. There are ', nvar, ' predictors.\n' )
     lenx <- length( x )
     if ( lenx == 1 ) {
       res <- rep(x, nvar)
@@ -81,7 +84,7 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 5000, nburn = 5000, thin = 1,
   }
   single_len_check <- function( x, nm ) {
     if ( length(x) > 1 ) {
-      warning( paste0(x, ' must be only a single number.') )
+      warning( paste0(x, ' must be only a single number.\n') )
       return( x[1] )
     }
     x
@@ -95,11 +98,11 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 5000, nburn = 5000, thin = 1,
       prior_beta_sigma <- diag( prior_beta_sigma, nvar )
     }
     else {
-      stop( paste0('prior_beta_sigma must be a numeric of length one, or a square matrix of dimension equal to the number of predictors. There are ', nvar, ' predictors.') )
+      stop( paste0('prior_beta_sigma must be a numeric of length one, or a square matrix of dimension equal to the number of predictors. There are ', nvar, ' predictors.\n') )
     }
   }
   if ( !all(nvar %in% dim(prior_beta_sigma)) ) {
-    stop( paste0('prior_beta_sigma matrix must be square of dimension equal to the number of predictors. There are ', nvar, ' predictors.') )
+    stop( paste0('prior_beta_sigma matrix must be square of dimension equal to the number of predictors. There are ', nvar, ' predictors.\n') )
   }
   single_len_check( prior_xi_shape, 'prior_xi_shape' )
   single_len_check( prior_xi_scale, 'prior_xi_scale' )
@@ -110,7 +113,7 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 5000, nburn = 5000, thin = 1,
 
   if ( !init_gamma[1] ) {
     init_gamma[1] <- TRUE
-    warning( 'The first element of the gamma starting value must be TRUE. This has been corrected.' )
+    warning( 'The first element of the gamma starting value must be TRUE. This has been corrected.\n' )
   }
 
   # Parameter initialization
@@ -220,14 +223,15 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 5000, nburn = 5000, thin = 1,
   }
 
   ### Filter Markov chain and return result
-  cat( 'Algorithm complete. Returning result.\n' )
+  cat( '\nAlgorithm complete. Returning result.\n' )
 
   keep <- seq( nburn + 1, MCMC_length, thin )
   col_inds <- sapply(var_split, '[', 1)
   gamma_trunc <- gammares[keep, col_inds]
 
-  list( beta = betares[keep, ], gamma = gammares[keep, ], xi = xires[keep],
-        X = X_full, y = y )
+  res <- list( beta = betares[keep, ], gamma = gammares[keep, ], xi = xires[keep], X = X_full, y = y )
+  class( res ) <- c( 'MCMC_DLM', 'NB_MCMC' )
+  res
 
 }
 

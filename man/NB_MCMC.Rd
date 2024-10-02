@@ -7,8 +7,8 @@
 NB_MCMC(
   formula,
   data = NULL,
-  nsamp = 5000,
-  nburn = 5000,
+  nsamp = 1000,
+  nburn = 1000,
   thin = 1,
   prior_beta_mu = 0,
   prior_beta_sigma = 100,
@@ -59,8 +59,11 @@ This function fits a negative binomial regression model via MCMC. Latent variabl
 As this is a Bayesian model, priors must be specified. Beta has a Gaussian prior, gamma has a Bernoulli prior, and xi has a Gamma distribution prior.
 }
 \examples{
-set.seed( 100 )
-quine_mcmc <- NB_MCMC( Days ~ Sex/(Age + Eth*Lrn), data = MASS::quine )
+X <- dplyr::select( dlnm::chicagoNMMAPS, c('cvd', 'dow', 'temp', 'dptp', 'o3') )
+X <- na.omit( X )
+arglag <- list( fun = 'bs', df = 4 )
+DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
+myfit <- NB_MCMC( cvd ~ ., data = DLM_dat )
 }
 \references{
 Jonathan Pillow and James Scott. "Fully Bayesian inference for neural models with negative-binomial spiking." Advances in neural information processing systems 25 (2012).
