@@ -13,10 +13,10 @@
 #' @importFrom reshape2 melt
 #' @importFrom dplyr select
 #' @export
-vis_output <- function( x, type = 'beta', include_intercept = TRUE, print_output = TRUE ) {
+vis_output <- function( x, type = 'beta', include_intercept = FALSE, print_output = TRUE ) {
 
-  if ( !inherits(x, 'MCMC_DLC') ) {
-    stop( "x must be an MCMC_DLC object." )
+  if ( !inherits(x, 'MCMC_DLM') ) {
+    stop( "x must be an MCMC_DLM object." )
   }
 
   plot_type <- pmatch( type, c('beta', 'gamma', 'xi') )
@@ -30,6 +30,11 @@ vis_output <- function( x, type = 'beta', include_intercept = TRUE, print_output
     beta_long <- reshape2::melt( x$beta, value.name = 'Value' )
     beta_long$varkeep <- varkeep_long
     beta_long_filter <- beta_long[beta_long$varkeep, ]
+
+    if ( !include_intercept ) {
+      int_inds <- beta_long_filter$Var2 == '(Intercept)'
+      beta_long_filter <- beta_long_filter[!int_inds, ]
+    }
 
     bet_plot <- ggplot( data = beta_long_filter, aes_string(x = "Value", y = "Var2") ) +
       geom_density_ridges( scale = 0.9, alpha = 0.7, fill = 'blue' ) + theme_ridges() +
@@ -46,13 +51,18 @@ vis_output <- function( x, type = 'beta', include_intercept = TRUE, print_output
   if ( plot_type == 2 ) {
 
     gamma_dat <- data.frame( y = apply(x$gamma, 2, mean), x = colnames(x$gamma) )
+    if ( !include_intercept ) {
+      int_inds <- gamma_dat$x == '(Intercept)'
+      gamma_dat <- gamma_dat[!int_inds, ]
+    }
+
     gam_plot <- ggplot( gamma_dat, aes_string(x = "x", y = "y") ) +
       geom_segment( aes_string(x = "x", xend = "x", y = 0, yend = "y" ), color = "blue") +  # Draw vertical lines
       geom_point( color = "blue", size = 2 ) +  # Add points on top of the lines
       labs( title = "", x = "Predictor", y = "Probability of Inclusion" )
 
     if ( print_output ) {
-      print( bet_plot )
+      print( gam_plot )
     }
 
     return( gam_plot )
@@ -71,7 +81,7 @@ vis_output <- function( x, type = 'beta', include_intercept = TRUE, print_output
       labs( title = "Posterior of Negative Binomial Stopping Parameter", x = "", y = "" )
 
     if ( print_output ) {
-      print( bet_plot )
+      print( xi_plot )
     }
 
     return( xi_plot )

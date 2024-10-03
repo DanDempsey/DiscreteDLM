@@ -4,7 +4,7 @@
 \alias{vis_output}
 \title{Visualises Results from MCMC_DLM Fits}
 \usage{
-vis_output(x, type = "beta", include_intercept = TRUE, print_output = TRUE)
+vis_output(x, type = "beta", include_intercept = FALSE, print_output = TRUE)
 }
 \arguments{
 \item{x}{An MCMC_DLM object.}
