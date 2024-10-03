@@ -1,0 +1,82 @@
+#' Visualises Results from MCMC_DLM Fits
+#'
+#' Provides some ggplot visualisations of the posterior from MCMC_DLM objects.
+#'
+#' @param x An MCMC_DLM object.
+#' @param type One of "beta", "gamma" or "xi". Partial matching is supported. Each type represents a graph for a different parameter: beta gives a ridgeplot of the regression slopes, gamma plots the mean probability of inclusion, and xi (negative binomial regression only) displays a kernel density estimate of the negative binomial stopping parameter.
+#' @param include_intercept Logical indicating if the intercept should be included in the graphs.
+#' @param print_output Logical indicating whether or not the ggplot objects should be printed to the screen.
+#' @author Daniel Dempsey (<dempsed6@tcd.ie>)
+#' @return A ggplot object. Will also display the ggplot visual if print_output = TRUE.
+#' @import ggplot2
+#' @import ggridges
+#' @importFrom reshape2 melt
+#' @importFrom dplyr select
+#' @export
+vis_output <- function( x, type = 'beta', include_intercept = TRUE, print_output = TRUE ) {
+
+  if ( !inherits(x, 'MCMC_DLC') ) {
+    stop( "x must be an MCMC_DLC object." )
+  }
+
+  plot_type <- pmatch( type, c('beta', 'gamma', 'xi') )
+  if ( is.na(plot_type) ) {
+    stop( "type must be one of: 'beta', 'gamma', or 'xi'.\n" )
+  }
+
+  if ( plot_type == 1 ) {
+
+    varkeep_long <- as.vector( x$gamma )
+    beta_long <- reshape2::melt( x$beta, value.name = 'Value' )
+    beta_long$varkeep <- varkeep_long
+    beta_long_filter <- beta_long[beta_long$varkeep, ]
+
+    bet_plot <- ggplot( data = beta_long_filter, aes_string(x = "Value", y = "Var2") ) +
+      geom_density_ridges( scale = 0.9, alpha = 0.7, fill = 'blue' ) + theme_ridges() +
+      labs( title = "Regression Slopes Ridge Plot", x = "", y = "Variable" )
+
+    if ( print_output ) {
+      print( bet_plot )
+    }
+
+    return( bet_plot )
+
+  }
+
+  if ( plot_type == 2 ) {
+
+    gamma_dat <- data.frame( y = apply(x$gamma, 2, mean), x = colnames(x$gamma) )
+    gam_plot <- ggplot( gamma_dat, aes_string(x = "x", y = "y") ) +
+      geom_segment( aes_string(x = "x", xend = "x", y = 0, yend = "y" ), color = "blue") +  # Draw vertical lines
+      geom_point( color = "blue", size = 2 ) +  # Add points on top of the lines
+      labs( title = "", x = "Predictor", y = "Probability of Inclusion" )
+
+    if ( print_output ) {
+      print( bet_plot )
+    }
+
+    return( gam_plot )
+
+  }
+
+  if ( plot_type == 3 ) {
+
+    if ( inherits(x, 'QB_MCMC') ) {
+      stop( "type = xi is only available for negative binomial regression.\n")
+    }
+
+    xi_dat <- data.frame( xi = x$xi )
+    xi_plot <- ggplot( xi_dat, aes_string(x = "xi") ) +
+      geom_density( fill = "blue", alpha = 0.7 ) +
+      labs( title = "Posterior of Negative Binomial Stopping Parameter", x = "", y = "" )
+
+    if ( print_output ) {
+      print( bet_plot )
+    }
+
+    return( xi_plot )
+
+  }
+
+}
+
