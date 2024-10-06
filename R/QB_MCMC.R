@@ -8,6 +8,7 @@
 #' @param nsamp The desired sample size from the posterior. Set to 5000 by default.
 #' @param nburn The number of iterations of the MCMC to be discarded as burn-in. Set to 5000 by default.
 #' @param thin Thinning factor of the MCMC chain after burn-in. Set to 1 by default (no values discarded after burn-in).
+#' @param standardize Logical indicating if the data should be standardised prior to fitting the model to zero mean and unit variance. If there is no intercept, then only scaling is applied (with a warning). The posterior sample of beta is transformed to the original scale.
 #' @param prior_beta_mu Mean of the Gaussian prior for the regression coefficients, beta. Either a vector of length equal to the number of predictors or a single numeric to represent a constant vector.
 #' @param prior_beta_sigma Covariance matrix of the Gaussian prior for the regression coefficients, beta. Either a square matrix of dimension equal to the number of predictors or a single numeric to represent an isotropic covariance matrix.
 #' @param prior_gamma_p Probability parameter of the Bernoulli prior for the predictor inclusion parameter, gamma. Either a vector of length equal to the number of predictors or a single numeric, to represent that all predictors have the same prior probability of inclusion. Note that the model must have one predictor included by default; because of this the first value must be equal to 1 if a vector is given.
@@ -36,16 +37,10 @@
 #' @import utils
 #' @importFrom MASS area
 #' @export
-
-### Load libraries
-#library( statmod ) # For Inverse Gaussian
-#library( mvtnorm ) # For mu
-#source( 'Code/Main_Software/ALD.R' ) # ALD functions
-
-### Main wrapper function for performing MCMC-based inference for the Negative Binomial DLM
 QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
-                     nburn = 1000, thin = 1, prior_beta_mu = 0, prior_beta_sigma = 100,
-                     prior_gamma_p = 0.5, init_beta = 0, init_gamma = FALSE ) {
+                     nburn = 1000, thin = 1, standardize = TRUE, prior_beta_mu = 0,
+                     prior_beta_sigma = 100, prior_gamma_p = 0.5, init_beta = 0,
+                     init_gamma = FALSE ) {
 
   ### Initialize
   cat( "Initializing MCMC algorithm...\n" )
@@ -59,10 +54,26 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
     x[sample.int(length(x), size, replace, prob)]
   }
 
-  # Set dataset and groups
+  # Set dataset
   X_full <- model.matrix( formula, data )
   nvar <- ncol( X_full )
   groups <- 1:nvar
+
+  # Standardize
+  col_mean <- rep( 0, nvar )
+  col_sd <- rep( 1, nvar )
+  int_ind <- which( colnames(X_full) == '(Intercept)' )
+  if ( standardize ) {
+    if ( length(int_ind) == 0 ) {
+      warning( 'No intercept; only scaling will be applied.' )
+      col_sd <- apply( X_full, 2, sd )
+    }
+    else {
+      col_mean[-int_ind] <- apply(X_full[, -int_ind], 2, mean )
+      col_sd[-int_ind] <- apply( X_full[, -int_ind], 2, sd )
+    }
+  }
+  X_full <- scale( X_full, col_mean, col_sd )
 
   # Prepare priors and associated statistics used in the algorithm
   len_check <- function( x, nm, gamma_correction = FALSE ) {
@@ -122,7 +133,7 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
   V0i <- V0i_full[gam, gam]
   V0ib0 <- V0ib0_full[gam]
 
-  y <- data[[all.vars(formula)[1]]]
+  y <- model.response( model.frame(formula, data = data) )
   y_len <- length( y )
   y_max <- max( y ) + 1
   rtrunc <- ifelse( y, TRUE, FALSE )
@@ -217,7 +228,15 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
   col_inds <- sapply(var_split, '[', 1)
   gamma_trunc <- gammares[keep, col_inds]
 
-  res <- list( beta = betares[keep, ], gamma = gammares[keep, ], quantile = quantile, X = X_full, y = y )
+  # Convert betares back to original scale
+  betares <- t( t(betares)/col_sd )
+  if( length(int_ind) > 0 ) {
+    betares[, int_ind] <- betares[, int_ind] - rowSums(t(t(betares) * col_mean))
+  }
+
+  # Return result
+  res <- list( beta = betares[keep, ], gamma = gammares[keep, ], quantile = quantile,
+               model_matrix = X_full, data = data )
   class( res ) <- c( 'MCMC_DLM', 'QB_MCMC' )
   res
 

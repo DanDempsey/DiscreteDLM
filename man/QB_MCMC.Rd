@@ -11,6 +11,7 @@ QB_MCMC(
   nsamp = 1000,
   nburn = 1000,
   thin = 1,
+  standardize = TRUE,
   prior_beta_mu = 0,
   prior_beta_sigma = 100,
   prior_gamma_p = 0.5,
@@ -30,6 +31,8 @@ QB_MCMC(
 \item{nburn}{The number of iterations of the MCMC to be discarded as burn-in. Set to 5000 by default.}
 
 \item{thin}{Thinning factor of the MCMC chain after burn-in. Set to 1 by default (no values discarded after burn-in).}
+
+\item{standardize}{Logical indicating if the data should be standardised prior to fitting the model to zero mean and unit variance. If there is no intercept, then only scaling is applied (with a warning). The posterior sample of beta is transformed to the original scale.}
 
 \item{prior_beta_mu}{Mean of the Gaussian prior for the regression coefficients, beta. Either a vector of length equal to the number of predictors or a single numeric to represent a constant vector.}
 

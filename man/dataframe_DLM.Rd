@@ -4,14 +4,7 @@
 \alias{dataframe_DLM}
 \title{Creating a Lagged Dataframe}
 \usage{
-dataframe_DLM(
-  X,
-  lag,
-  dynamic_vars = NULL,
-  arglag = list(fun = "bs"),
-  scale = TRUE,
-  ...
-)
+dataframe_DLM(X, lag, dynamic_vars = NULL, arglag = list(fun = "bs"), ...)
 }
 \arguments{
 \item{X}{A dataframe.}
@@ -22,12 +15,10 @@ dataframe_DLM(
 
 \item{arglag}{A list that is passed into onebasis for generating a basis matrix.}
 
-\item{scale}{Logical indicating if the user wishes the columns of the resulting dataframe should be scaled to have zero mean and unit variance.}
-
 \item{...}{Further arguments to be passed into the crossbasis function.}
 }
 \value{
-A dataframe where the listed dynamic variables have been appropriately lagged. If no dynamic variables are given, the input dataframe is returned unaltered (besides standardisation if scale = TRUE) with a warning.
+A dataframe where the listed dynamic variables have been appropriately lagged. If no dynamic variables are given, the input dataframe is returned unaltered with a warning.
 }
 \description{
 Transforms a dataframe by smoothing over lags of dynamic variables to prepare it for distributed lag modelling.

@@ -6,9 +6,8 @@
 #' @param lag Lag length. See the help file for the "crossbasis" function from the dlnm package.
 #' @param dynamic_vars The names of the columns that should be lagged. If not supplied, the dataset is not altered in any way (except possibly for scaling) and a warning is supplied.
 #' @param arglag A list that is passed into onebasis for generating a basis matrix.
-#' @param scale Logical indicating if the user wishes the columns of the resulting dataframe should be scaled to have zero mean and unit variance.
 #' @param ... Further arguments to be passed into the crossbasis function.
-#' @return A dataframe where the listed dynamic variables have been appropriately lagged. If no dynamic variables are given, the input dataframe is returned unaltered (besides standardisation if scale = TRUE) with a warning.
+#' @return A dataframe where the listed dynamic variables have been appropriately lagged. If no dynamic variables are given, the input dataframe is returned unaltered with a warning.
 #' @author Daniel Dempsey (<dempsed6@tcd.ie>)
 #' @examples
 #' X <- dplyr::select( dlnm::chicagoNMMAPS, c('cvd', 'dow', 'temp', 'dptp', 'o3') )
@@ -21,15 +20,15 @@
 #' @importFrom dplyr select
 #' @importFrom magrittr %>%
 #' @export
-
-dataframe_DLM <- function( X, lag, dynamic_vars = NULL, arglag = list(fun = 'bs'), scale = TRUE, ... ) {
+dataframe_DLM <- function( X, lag, dynamic_vars = NULL, arglag = list(fun = 'bs'), ... ) {
 
   if ( is.null(dynamic_vars) ) {
-    if ( scale ) {
-      X <- apply( X, 2, scale )
-    }
-    warning( 'No dynamic variables listed.' )
+    warning( 'No dynamic variables listed. Returning given data.' )
     return( X )
+  }
+
+  if ( missing(lag) ) {
+    stop( "The 'lag' argument must be supplied." )
   }
 
   static_vars <- setdiff( colnames(X), dynamic_vars )
@@ -38,14 +37,22 @@ dataframe_DLM <- function( X, lag, dynamic_vars = NULL, arglag = list(fun = 'bs'
   X_dynamic <- lapply( X_dynamic_raw, crossbasis, lag = lag, arglag = arglag, ... ) %>%
     do.call( what = 'cbind' )
 
-  if ( scale ) {
-    X_dynamic <- apply( X_dynamic, 2, scale )
-  }
-
   l <- ncol( X_dynamic ) / length( dynamic_vars )
-  colnames( X_dynamic ) <- paste0( rep( colnames(X_dynamic_raw), each = l ), paste0('.l', 1:l) )
+  dynamic_names <- paste0( rep( dynamic_vars, each = l ), paste0('.l', 1:l) )
+  colnames( X_dynamic ) <- dynamic_names
+  dynamic_names_list <- split( dynamic_names, rep(1:ncol(X_dynamic_raw), each = l) )
+  names( dynamic_names_list ) <- dynamic_vars
 
-  cbind( X_static, X_dynamic ) %>% na.omit
+  res <- list( data = cbind(X_static, X_dynamic) %>% na.omit,
+               dynamic_names = dynamic_names_list, lag = lag )
+  class( res ) <- 'dataframe_DLM'
+  res
 
 }
+
+#' @export
+as.data.frame.dataframe_DLM <- function( x, ... ) {
+  as.data.frame( x$data, ... )
+}
+
 
