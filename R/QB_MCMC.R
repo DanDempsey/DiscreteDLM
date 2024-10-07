@@ -31,11 +31,9 @@
 #' X <- na.omit( X )
 #' arglag <- list( fun = 'bs', df = 4 )
 #' DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
-#' myfit <- QB_MCMC( binary_response ~ ., data = X )
-#' @import statmod
-#' @import mvtnorm
+#' myfit <- QB_MCMC( binary_response ~ ., data = DLM_dat, nsamp = 100, nburn = 100 )
+#' @importFrom statmod rinvgauss
 #' @import utils
-#' @importFrom MASS area
 #' @export
 QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
                      nburn = 1000, thin = 1, standardize = TRUE, prior_beta_mu = 0,

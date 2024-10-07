@@ -63,7 +63,7 @@ X <- cbind( binary_response, predictors )
 X <- na.omit( X )
 arglag <- list( fun = 'bs', df = 4 )
 DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
-myfit <- QB_MCMC( binary_response ~ ., data = X )
+myfit <- QB_MCMC( binary_response ~ ., data = DLM_dat, nsamp = 100, nburn = 100 )
 }
 \references{
 Dries F. Benoit and Dirk Van den Poel. "bayesQR: A Bayesian approach to quantile regression." Journal of Statistical Software 76 (2017): 1-32.

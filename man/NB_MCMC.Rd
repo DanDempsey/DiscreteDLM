@@ -66,7 +66,7 @@ X <- dplyr::select( dlnm::chicagoNMMAPS, c('cvd', 'dow', 'temp', 'dptp', 'o3') )
 X <- na.omit( X )
 arglag <- list( fun = 'bs', df = 4 )
 DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
-myfit <- NB_MCMC( cvd ~ ., data = DLM_dat$data )
+myfit <- NB_MCMC( cvd ~ ., data = DLM_dat, nsamp = 100, nburn = 100 )
 }
 \references{
 Jonathan Pillow and James Scott. "Fully Bayesian inference for neural models with negative-binomial spiking." Advances in neural information processing systems 25 (2012).

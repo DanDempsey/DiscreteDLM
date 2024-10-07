@@ -12,6 +12,7 @@
 #' @import ggridges
 #' @importFrom reshape2 melt
 #' @importFrom dplyr select
+#' @importFrom dlnm onebasis
 #' @export
 vis_output <- function( x, type = 'beta', include_intercept = FALSE, print_output = TRUE ) {
 
@@ -19,15 +20,15 @@ vis_output <- function( x, type = 'beta', include_intercept = FALSE, print_outpu
     stop( "x must be an MCMC_DLM object." )
   }
 
-  plot_type <- pmatch( type, c('beta', 'gamma', 'xi') )
+  plot_type <- pmatch( type, c('beta', 'gamma', 'xi', 'lags') )
   if ( is.na(plot_type) ) {
-    stop( "type must be one of: 'beta', 'gamma', or 'xi'.\n" )
+    stop( "type must be one of: 'beta', 'gamma', 'xi', or 'lags'.\n" )
   }
 
   if ( plot_type == 1 ) {
 
     varkeep_long <- as.vector( x$gamma )
-    beta_long <- reshape2::melt( x$beta, value.name = 'Value' )
+    beta_long <- melt( x$beta, value.name = 'Value' )
     beta_long$varkeep <- varkeep_long
     beta_long_filter <- beta_long[beta_long$varkeep, ]
 
@@ -85,6 +86,38 @@ vis_output <- function( x, type = 'beta', include_intercept = FALSE, print_outpu
     }
 
     return( xi_plot )
+
+  }
+
+  if ( plot_type == 4 ) {
+
+    arglag_full <- c( list(x = 0:x$data$lag), x$data$arglag )
+    lag_splines <- do.call( 'onebasis', arglag_full )
+    beta_list <- lapply( x$data$dynamic_names, function(z) { x = x$beta[, z] } )
+
+    lag_plot_fun <- function( x, nm ) {
+
+      fitted_weights_raw <- lag_splines %*% t( x )
+      fitted_weights_raw_mean <- apply( fitted_weights_raw, 1, mean )
+      mean_effect <- sum( fitted_weights_raw_mean )
+      fitted_weights_mean <- fitted_weights_raw_mean / mean_effect
+
+      graph_dat <- data.frame( x = seq_along(fitted_weights_mean) - 1, y = fitted_weights_mean )
+
+      ggplot( graph_dat, aes_string(x = 'x', y = 'y') ) + geom_line() +
+        labs( title = paste0(nm, ' lag response'), x = "Lag" )
+
+    }
+
+    lag_plots <- Map( lag_plot_fun, x = beta_list, nm = names(beta_list) )
+
+    if ( print_output ) {
+      for ( i in 1:length(lag_plots) ) {
+        print( lag_plots[[i]] )
+      }
+    }
+
+    return( lag_plots )
 
   }
 

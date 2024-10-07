@@ -15,10 +15,9 @@
 #' arglag <- list( fun = 'bs', df = 4 )
 #' DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
 #' head( DLM_dat )
+#' @importFrom dplyr select %>%
 #' @import splines
 #' @import dlnm
-#' @importFrom dplyr select
-#' @importFrom magrittr %>%
 #' @export
 dataframe_DLM <- function( X, lag, dynamic_vars = NULL, arglag = list(fun = 'bs'), ... ) {
 
@@ -44,7 +43,7 @@ dataframe_DLM <- function( X, lag, dynamic_vars = NULL, arglag = list(fun = 'bs'
   names( dynamic_names_list ) <- dynamic_vars
 
   res <- list( data = cbind(X_static, X_dynamic) %>% na.omit,
-               dynamic_names = dynamic_names_list, lag = lag )
+               dynamic_names = dynamic_names_list, lag = lag, arglag = arglag )
   class( res ) <- 'dataframe_DLM'
   res
 
