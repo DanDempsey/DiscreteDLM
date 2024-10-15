@@ -31,7 +31,8 @@
 #' X <- na.omit( X )
 #' arglag <- list( fun = 'bs', df = 4 )
 #' DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
-#' myfit <- QB_MCMC( binary_response ~ ., data = DLM_dat, nsamp = 100, nburn = 100 )
+#' myfit <- QB_MCMC( binary_response ~ ., data = DLM_dat, nsamp = 50, nburn = 50 )
+#' summary( myfit )
 #' @importFrom statmod rinvgauss
 #' @import utils
 #' @export

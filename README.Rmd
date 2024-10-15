@@ -1,5 +1,7 @@
 ---
+title: "DiscreteDLM"
 output: github_document
+bibliography: ref.bib
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -13,12 +15,14 @@ knitr::opts_chunk$set(
 )
 ```
 
-# DiscreteDLM
-
 <!-- badges: start -->
 <!-- badges: end -->
 
-DiscreteDLM contains functions that fits Bayesian Distributed Lag Models when the response variable is either a count or binary. The package includes an implementation of Bayesian quantile binary regression (for binary response data) and negative-binomial regression (for count response data). Additionally, these functions implement variable uncertainty inference for each predictor. These functions are written generically, which means that they can be applied to any problem. For distributed lag models, we have included a function that creates a lagged version of the dataset, which borrows from the dlnm package.
+DiscreteDLM contains functionality for fitting and visualising Bayesian Distributed Lag Models (DLMs) when the response variable is either count or binary. More specifically, this package contains an implementation of Bayesian quantile binary regression (for binary response data) and negative-binomial regression (for count response data). Additionally, these functions implement variable uncertainty inference for each predictor. 
+
+While these functions can be applied to any standard regression problem, the package was set up with DLMs in mind; the functions therein allow for an easy-to-use pipeline to go from defining the DLM, fitting the DLM, and visualising the results.
+
+This document will provide a basic illustration of how the package is intended to be used. For more details on DLMs and the methods we use here, please see @dempsey2024bayesian.
 
 ## Installation
 
@@ -30,14 +34,14 @@ You can install the development version of DiscreteDLM like so:
 
 ## Using DiscreteDLM
 
-The idea is we take a dataset with longitudinal (binary or count) response and predictor data, and we want to fit the appropriate regression model to determine how the lags of the predictor affect the value of the response.
+The idea behind DLMs is that we wish to fit a regression model to data where some of the predictors are related to the response longitudinally. In this package we focus specifically on DLMs where the response data is either binary or count data. 
 
-First, we take a longitudinal dataset and prepare it for a DLM using the dataframe_DLM function:
+For the following examples we will be using the "chicagoNMMAPS" dataset from the dlnm package [@dlnm2011]. We prepare the dataset by using the "dataframe_DLM" package, after first using the mice package [@mice2011] to impute missing values. The purpose of dataframe_DLM is to define which predictors should be treated as longitudinal (which we refer to as "dynamic variables") and how the effect of their lags on the response (the "lag-response") should be modelled:
 
-```{r lagged_dataframe}
+```{r DLM_dataframe}
 library( DiscreteDLM )
-library( magrittr )
 library( mice )
+library( magrittr )
 
 set.seed( 1001 )
 X <- complete( mice(dlnm::chicagoNMMAPS) )
@@ -49,12 +53,61 @@ seasons <- c( rep('Winter', 2), rep('Spring', 3), rep('Summer', 3), rep('Autumn'
 X$season <- seasons[X$month] %>% as.factor
 
 ### Set static and dynamic variables
-X <- dplyr::select( X, c('death', 'dow', 'season', 'temp', 'dptp', 'rhum', 'pm10', 'o3') )
-X_lagged <- dataframe_DLM(X, lag = 40, df = 7, dynamic_vars = c('temp', 'dptp', 'rhum', 'pm10', 'o3'))
+X <- dplyr::select( X, c('death', 'season', 'temp', 'pm10', 'o3') )
+DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars = c('temp', 'pm10', 'o3'),
+                          arglag = list(fun = 'bs', df = 7) )
 ```
 
-Now we can fit the model to the death (count) data.
+Here, we specified that "temp", "pm10" and "o3" should be treated longitudinally, using the "dynamic_vars" argument. The "lag" argument specifies the number of lags that we wish to fit to the model (in this case, 40 time units). We use the "arglag" argument to define the lag-response; in this case we use a b-spline with 7 degrees of freedom. Note that, besides the response variable "death", we also have a variable "season" which we did not specify as a dynamic variable; this instead will be treated as a static (i.e., non-longitudinal) in the model, as will the intercept.
+
+Internally, the dataframe_DLM function uses the "onebasis" function from the dlnm package to construct the dataset; further named arguments to onebasis can be passed through dataframe_DLM if desired.
+
+The output of dataframe_DLM is a "dataframe_DLM" object, which R will treat as a standard dataframe, but contains extra information that the Bayesian fitting and visualisation functions will properly handle the DLM components.
+
+We will now fit the DLM model. Our response variable, "death", is a count variable so we will use a negative binomial regression using the "NB_MCMC" function:
 
 ```{r NB_regression}
-nb_fit <- NB_MCMC( death ~ ., data = X_lagged )
+nb_fit <- NB_MCMC( death ~ ., data = DLM_dat, nsamp = 5000, nburn = 1000, thin = 10 )
 ```
+
+We specify the regression model in the usual way using a formula. The data argument does not necessarily need to be a dataframe_DLM object, and will work with standard dataframes if desired. As stated above, this does not simply fit a regression model, but also includes a binary variable inclusion parameter to infer the probability of inclusion. In the case of negative binomial regression, the stopping parameter is also inferred. Priors and starting values for each of these parameters can be set through the NB_MCMC function; see the help file for more details.
+
+The output of this function is an "MCMC_DLM" object. We can get a summary of results using the "summary" function:
+
+```{r NB_regression_summary}
+summary( nb_fit )
+```
+
+We can also conveniently plot the output with "plot". Since there are a number of different parameters, the user needs to specify which type of plot they would like. There are 4 options: "beta" (regression slopes), "gamma" (variable inclusion), "xi" (negative binomial stopping parameter - of course, not available for quantile binary regression), and "lags" which displays the lag-response. These are all plotted using ggplot.
+
+type = "beta" gives a ridgeplot of each of the regression coefficients:
+
+```{r NB_regression_beta_plot}
+plot( nb_fit, type = 'beta', print_output = FALSE )
+```
+Note that above, the intercept is not included. If you did wish to include it, you can simply set "include_intercept = TRUE" in the function. 
+
+type = "gamma" is a simple chart of the probability of inclusion:
+
+```{r NB_regression_gamma_plot}
+plot( nb_fit, type = 'gamma', print_output = FALSE )
+```
+
+As before the intercept can also be included but note that the intercept is assumed to have 100% inclusion by default. 
+
+type = "xi" gives a kernel density plot of the stopping parameter:
+
+```{r NB_regression_xi_plot}
+plot( nb_fit, type = 'xi', print_output = FALSE )
+```
+And finally, type = "lags" shows the inferred lag-response of the dynamic variables. The function will plot the lag-response for each variable seperately:
+
+```{r NB_regression_lags_plot}
+plot( nb_fit, type = 'lags', print_output = FALSE )
+```
+
+Each of these functions returns the ggplot object that was used to print the output (in the case of type = "lags", the output is a list of ggplot objects) so the user can store and edit as they see fit. If you simply want the ggplot object without printing the graph, you can set "print_output = FALSE" in the function (it was set this way in the code chunks above to avoid each plot being displayed twice in the file).
+
+This covers the basic explanation of package functionality. In the case of binary data, you can use the "QB_MCMC" function to fit a quantile binary model in much the same way as we used NB_MCMC to fit a negative binomial model. In this case there is no stopping parameter, but the quantile must be specified. "quantile = 0.5" corresponds to median regression, for example. Please see the help file for more details.
+
+## References

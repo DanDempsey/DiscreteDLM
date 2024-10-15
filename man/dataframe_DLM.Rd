@@ -28,7 +28,6 @@ X <- dplyr::select( dlnm::chicagoNMMAPS, c('cvd', 'dow', 'temp', 'dptp', 'o3') )
 X <- na.omit( X )
 arglag <- list( fun = 'bs', df = 4 )
 DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
-head( DLM_dat )
 }
 \author{
 Daniel Dempsey (\href{mailto:dempsed6@tcd.ie}{dempsed6@tcd.ie})

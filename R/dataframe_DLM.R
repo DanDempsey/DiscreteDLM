@@ -14,7 +14,6 @@
 #' X <- na.omit( X )
 #' arglag <- list( fun = 'bs', df = 4 )
 #' DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
-#' head( DLM_dat )
 #' @importFrom dplyr select %>%
 #' @import splines
 #' @import dlnm
@@ -54,4 +53,24 @@ as.data.frame.dataframe_DLM <- function( x, ... ) {
   as.data.frame( x$data, ... )
 }
 
+#' @export
+print.dataframe_DLM <- function( x, ... ) {
+  cat( 'Data:\n')
+  print( x$data, ... )
+  cat( paste0('\nLag: ', x$lag, '\n\n') )
+  cat( 'Arglag:\n' )
+  print( x$arglag, ... )
+  cat( '\n' )
+}
+
+#' @export
+summary.dataframe_DLM <- function( object, ... ) {
+  print( summary(as.data.frame(object), ...) )
+  cat( paste0('\nLag: ', object$lag, '\n\n') )
+}
+
+#' @export
+plot.dataframe_DLM <- function( x, ... ) {
+  plot( as.data.frame(x), ... )
+}
 

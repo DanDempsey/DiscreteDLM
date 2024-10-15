@@ -1,6 +1,6 @@
 Package: DiscreteDLM
 Title: Bayesian Distributed Lag Model Fitting for Binary and Count Response Data  
-Version: 0.9.7
+Version: 0.9.8
 Authors@R: 
     c(person("Daniel", "Dempsey", , "dempsed6@tcd.ie", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0899-5412")),

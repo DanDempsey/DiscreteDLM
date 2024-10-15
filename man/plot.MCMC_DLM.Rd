@@ -2,19 +2,26 @@
 % Please edit documentation in R/class_functions.R
 \name{plot.MCMC_DLM}
 \alias{plot.MCMC_DLM}
-\title{Plotting Method for MCMC_DLM Object}
+\title{Visualises Results from MCMC_DLM Fits}
 \usage{
-\method{plot}{MCMC_DLM}(x, type = "beta", ...)
+\method{plot}{MCMC_DLM}(x, type = "beta", include_intercept = FALSE, print_output = TRUE, ...)
 }
 \arguments{
 \item{x}{An MCMC_DLM object.}
 
-\item{type}{One of "beta", "gamma" or "xi". Partial matching is supported. Each type represents a graph for a different parameter: beta gives a ridgeplot of the regression slopes, gamma plots the mean probability of inclusion, and xi (negative binomial regression only) displays a kernel density estimate of the negative binomial stopping parameter.}
+\item{type}{One of "beta", "gamma", "xi", or "lags". Partial matching is supported. Each type represents a graph for a different parameter: beta gives a ridgeplot of the regression slopes, gamma plots the mean probability of inclusion, and xi (negative binomial regression only) displays a kernel density estimate of the negative binomial stopping parameter.}
 
-\item{...}{Further arguments; currently unused.}
+\item{include_intercept}{Logical indicating if the intercept should be included in the graphs.}
+
+\item{print_output}{Logical indicating whether or not the ggplot objects should be printed to the screen.}
+
+\item{...}{Currently unused.}
+}
+\value{
+A ggplot object, except when type = 'lags', in which case it will be a list of ggplot objects. Will display the ggplot visual if print_output = TRUE.
 }
 \description{
-Provides some visualisations of the posterior.
+Provides some ggplot visualisations of the posterior from MCMC_DLM objects.
 }
 \author{
 Daniel Dempsey (\href{mailto:dempsed6@tcd.ie}{dempsed6@tcd.ie})

@@ -32,7 +32,8 @@
 #' X <- na.omit( X )
 #' arglag <- list( fun = 'bs', df = 4 )
 #' DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
-#' myfit <- NB_MCMC( cvd ~ ., data = DLM_dat, nsamp = 100, nburn = 100 )
+#' myfit <- NB_MCMC( cvd ~ ., data = DLM_dat, nsamp = 50, nburn = 50 )
+#' summary( myfit )
 #' @importFrom BayesLogit rpg
 #' @import utils
 #' @useDynLib DiscreteDLM, .registration = TRUE
