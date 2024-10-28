@@ -8,7 +8,7 @@
 #' @param arglag A list that is passed into onebasis for generating a basis matrix.
 #' @param ... Further arguments to be passed into the crossbasis function.
 #' @return A dataframe where the listed dynamic variables have been appropriately lagged. If no dynamic variables are given, the input dataframe is returned unaltered with a warning.
-#' @author Daniel Dempsey (<dempsed6@tcd.ie>)
+#' @author Daniel Dempsey (<daniel.dempsey0@gmail.com>)
 #' @examples
 #' X <- dplyr::select( dlnm::chicagoNMMAPS, c('cvd', 'dow', 'temp', 'dptp', 'o3') )
 #' X <- na.omit( X )

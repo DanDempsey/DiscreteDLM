@@ -15,14 +15,16 @@
 #' @param init_beta Initial MCMC values for the beta parameters. Either a vector of length equal to the number of predictors or a single numeric representing the same starting value for each beta component.
 #' @param init_gamma Initial MCMC values for the gamma parameters. Either a vector of length equal to the number of predictors or a single numeric representing the same starting value for each gamma component. Note that the model must have one predictor included by default; because of this the first value must be equal to 1 if a vector is given.
 #' @return A list containing the MCMC-derived posterior sample, as well as the data that were used.
-#' @details This function fits a quantile binary regression model via MCMC. Latent variable representation allows for Gibbs sampling of the parameters; see Benoit (2017). The algorithm also includes predictor inclusion uncertainty inference (inferred via a Metroplis step) adapted from Holmes and Held (2006). The parameters of interest for this model are the regression slopes (beta) and the binary predictor inclusion indicator (gamma).
+#' @details This function fits a quantile binary regression model via MCMC. Latent variable representation allows for Gibbs sampling of the parameters; see Benoit and Van den Poel (2017). The algorithm also includes predictor inclusion uncertainty inference (inferred via a Metroplis step) adapted from Holmes and Held (2006). The parameters of interest for this model are the regression slopes (beta) and the binary predictor inclusion indicator (gamma). For further details, see Dempsey and Wyse (2024).
 #'
 #' As this is a Bayesian model, priors must be specified. Beta has a Gaussian prior and gamma has a Bernoulli prior.
 #' @references
 #' Dries F. Benoit and Dirk Van den Poel. "bayesQR: A Bayesian approach to quantile regression." Journal of Statistical Software 76 (2017): 1-32.
 #'
-#' Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." (2006): 145-168.
-#' @author Daniel Dempsey (<dempsed6@tcd.ie>)
+#' Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." Bayesian Analysis 1(1) (2006): 145-168.
+#'
+#' Daniel Dempsey and Jason Wyse (2024). Bayesian Generalized Distributed Lag Regression with Variable Selection. arXiv: https://arxiv.org/abs/2403.03646
+#' @author Daniel Dempsey (<daniel.dempsey0@gmail.com>)
 #' @examples
 #' set.seed( 100 )
 #' binary_response <- dlnm::chicagoNMMAPS$cvd > 65
@@ -53,10 +55,14 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
     x[sample.int(length(x), size, replace, prob)]
   }
 
+  # Utility function for back/forward solving instead of explicit inversion using Cholesky
+  backfor <- function( x, y ) {
+    backsolve( x, forwardsolve(t(x), y) )
+  }
+
   # Set dataset
   X_full <- model.matrix( formula, data )
   nvar <- ncol( X_full )
-  groups <- 1:nvar
 
   # Standardize
   col_mean <- rep( 0, nvar )
@@ -66,6 +72,7 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
     if ( length(int_ind) == 0 ) {
       warning( 'No intercept; only scaling will be applied.' )
       col_sd <- apply( X_full, 2, sd )
+      int_ind <- 1
     }
     else {
       col_mean[-int_ind] <- apply(X_full[, -int_ind], 2, mean )
@@ -109,9 +116,9 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
   V0i_full <- chol2inv( chol(prior_beta_sigma) )
   V0ib0_full <- V0i_full %*% prior_beta_mu
 
-  if ( !init_gamma[1] ) {
-    init_gamma[1] <- TRUE
-    warning( 'The first element of the gamma starting value must be TRUE. This has been corrected.\n' )
+  if ( !init_gamma[int_ind] ) {
+    init_gamma[int_ind] <- TRUE
+    warning( 'The gamma value corresponding to the intercept (or the first value if there is no intercept) must be TRUE. This has been corrected.\n' )
   }
 
   # Parameter initialization
@@ -122,14 +129,15 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
   colnames( betares ) <- colnames( gammares ) <- colnames( X_full )
 
   # Variable index to link the dynamic variable gammas and apply starting value
-  var_split <- split( 1:nvar, groups )
-  var_index_unique <- unique( groups )[-1] # Used when proposing new gamma values
-  gammares[1, ][unlist(var_split[init_gamma])] <- TRUE
+  var_seq <- 1:nvar
+  var_index_unique <- var_seq[-int_ind] # Used when proposing new gamma values
+  gammares[1, ][var_seq[init_gamma]] <- TRUE
   gam <- gammares[1, ]
 
   X <- X_full[, gam, drop = FALSE]
   Xb <- X %*% init_beta[gam]
   V0i <- V0i_full[gam, gam]
+  V0i_U <- chol( V0i )
   V0ib0 <- V0ib0_full[gam]
 
   y <- model.response( model.frame(formula, data = data) )
@@ -143,15 +151,14 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
   delta <- 2 + ( ( psi^2 ) / phi )
 
   ystar <- rTALD( n = y_len, rtrunc = rtrunc, mu = Xb, sigma = 1, p = quantile )
-  chi <- (ystar - Xb)^2 / phi
-  nu <- 1/rinvgauss( y_len, mean = sqrt( delta/chi ), shape = delta )
-  lambda <- ystar - (psi * nu)
-
+  chi <- ( ystar - Xb )^2 / phi
+  nu <- 1/rinvgauss( y_len, mean = sqrt(delta/chi), shape = delta )
+  lambda <- ystar - ( psi * nu )
   omega <- 1 / (phi * nu)
-  XtO <- t(X * omega)
 
-  V <- chol2inv( chol(V0i + XtO%*%X) )
-  B <- V%*%( V0ib0 + XtO%*%lambda )
+  XtO <- t(X * omega)
+  Vi_U <- chol( V0i + XtO%*%X )
+  B <- backfor( Vi_U, V0ib0 + XtO%*%lambda )
 
   ### Main Loop
   cat( 'Initialization complete. Running algorithm...\n' )
@@ -160,29 +167,30 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
 
     ### Update gamma
     # Propose change to parameter inclusion set
-    change_ind <- var_split[[ sample2( var_index_unique, 1 ) ]]
+    change_ind <- var_seq[ sample2(var_index_unique, 1) ]
     gam_star <- gam
     gam_star[change_ind] <- !gam_star[change_ind]
 
     # Construct log acceptance ratio for proposed move
     X_star <- X_full[, gam_star, drop = FALSE]
     V0i_star <- V0i_full[gam_star, gam_star]
+    V0i_star_U <- chol( V0i_star )
     V0ib0_star <- V0ib0_full[gam_star]
     XtO_star <- t( X_star * omega )
 
-    V_star <- chol2inv( chol(V0i_star + XtO_star%*%X_star) )
-    B_star <- V_star%*%( V0ib0_star + XtO_star%*%lambda )
+    Vi_star_U <- chol( V0i_star + XtO_star%*%X_star )
+    B_star <- backfor( Vi_star_U, V0ib0_star + XtO_star%*%lambda )
 
-    ldet_V <- sum( log(diag(chol(V))) )
-    ldet_V_star <- sum( log(diag(chol(V_star))) )
-    ldet_V0i <- sum( log( diag(chol(V0i)) ) )
-    ldet_V0i_star <- sum( log(diag(chol(V0i_star))) )
+    ldet_V <- -sum( log(diag(Vi_U)) )
+    ldet_V_star <- -sum( log(diag(Vi_star_U)) )
+    ldet_V0i <- sum( log( diag(V0i_U) ) )
+    ldet_V0i_star <- sum( log(diag(V0i_star_U)) )
 
     gam_lprior <- dbinom( gam, 1, prior_gamma_p, log = TRUE )
     gam_lprior_star <- dbinom( gam_star, 1, prior_gamma_p, log = TRUE )
 
-    lkernel <- crossprod(B, chol2inv(chol(V)))%*%B/2
-    lkernel_star <- crossprod(B_star, chol2inv(chol(V_star)))%*%B_star/2
+    lkernel <- t(B) %*% t(Vi_U) %*% Vi_U %*% B/2
+    lkernel_star <- t(B_star) %*% t(Vi_star_U) %*% Vi_star_U %*% B_star/2
 
     lnum <- sum( ldet_V_star, ldet_V0i_star, lkernel_star, gam_lprior_star )
     ldenom <- sum( ldet_V, ldet_V0i, lkernel, gam_lprior )
@@ -192,6 +200,7 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
       gammares[i, ] <- gam <- gam_star
       X <- X_star
       V0i <- V0i_star
+      V0i_U <- V0i_star_U
       V0ib0 <- V0ib0_star
       Xb <- X %*% betares[i-1, gam]
     } else { # reject
@@ -209,10 +218,13 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
     ### Update beta
     lambda <- ystar - ( psi * nu )
     omega <- 1 / ( phi * nu )
+
     XtO <- t( X * omega )
-    V <- chol2inv( chol(V0i + XtO%*%X) )
-    B <- V%*%( V0ib0 + XtO%*%lambda )
-    betares[i, gam] <- B + t(chol(V)) %*% rnorm(sum(gam))
+    Vi_U <- chol( V0i + XtO%*%X )
+    B <- backfor( Vi_U, V0ib0 + XtO%*%lambda )
+    V_U <- chol( chol2inv(Vi_U) )
+
+    betares[i, gam] <- B + t(V_U) %*% rnorm(sum(gam))
     Xb <- X %*% betares[i, gam]
 
     # Update progress
@@ -221,11 +233,10 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
   }
 
   ### Filter Markov chain and return result
-  cat( '\nAlgorithm complete. Returning result.\n' )
+  cat( '\nAlgorithm complete.\n' )
 
   keep <- seq( nburn + 1, MCMC_length, thin )
-  col_inds <- sapply(var_split, '[', 1)
-  gamma_trunc <- gammares[keep, col_inds]
+  gamma_trunc <- gammares[keep, ]
 
   # Convert betares back to original scale
   betares <- t( t(betares)/col_sd )

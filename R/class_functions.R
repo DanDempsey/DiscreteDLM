@@ -46,7 +46,7 @@ summary.MCMC_DLM <- function( object, digits = 3, ... ) {
 #' @param include_intercept Logical indicating if the intercept should be included in the graphs.
 #' @param print_output Logical indicating whether or not the ggplot objects should be printed to the screen.
 #' @param ... Currently unused.
-#' @author Daniel Dempsey (<dempsed6@tcd.ie>)
+#' @author Daniel Dempsey (<daniel.dempsey0@gmail.com>)
 #' @return A ggplot object, except when type = 'lags', in which case it will be a list of ggplot objects. Will display the ggplot visual if print_output = TRUE.
 #' @import ggplot2
 #' @import ggridges

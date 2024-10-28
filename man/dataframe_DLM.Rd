@@ -30,5 +30,5 @@ arglag <- list( fun = 'bs', df = 4 )
 DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
 }
 \author{
-Daniel Dempsey (\href{mailto:dempsed6@tcd.ie}{dempsed6@tcd.ie})
+Daniel Dempsey (\href{mailto:daniel.dempsey0@gmail.com}{daniel.dempsey0@gmail.com})
 }

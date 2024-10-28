@@ -57,7 +57,7 @@ A list containing the MCMC-derived posterior sample, as well as the data that we
 Fits a negative binomial regression model using Gibbs sampling and performs Bayesian variable selection.
 }
 \details{
-This function fits a negative binomial regression model via MCMC. Latent variable representation allows for Gibbs sampling of the parameters; see Pillow and Scott (2012) and Zhou et. al. (2012). The algorithm also includes predictor inclusion uncertainty inference (inferred via a Metroplis step) adapted from Holmes and Held (2006). The parameters of interest for this model are the regression slopes (beta), the binary predictor inclusion indicator (gamma) and the negative binomial stopping parameter (xi).
+This function fits a negative binomial regression model via MCMC. Latent variable representation allows for Gibbs sampling of the parameters; see Pillow and Scott (2012) and Zhou et. al. (2012). The algorithm also includes predictor inclusion uncertainty inference (inferred via a Metroplis step) adapted from Holmes and Held (2006). The parameters of interest for this model are the regression slopes (beta), the binary predictor inclusion indicator (gamma) and the negative binomial stopping parameter (xi). For further details, see Dempsey and Wyse (2024).
 
 As this is a Bayesian model, priors must be specified. Beta has a Gaussian prior, gamma has a Bernoulli prior, and xi has a Gamma distribution prior.
 }
@@ -74,8 +74,10 @@ Jonathan Pillow and James Scott. "Fully Bayesian inference for neural models wit
 
 Mingyuan Zhou, Lingbo Li, David Dunson and Lawrence Carin. "Lognormal and gamma mixed negative binomial regression." Proceedings of the... International Conference on Machine Learning. International Conference on Machine Learning. Vol. 2012. NIH Public Access, 2012.
 
-Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." (2006): 145-168.
+Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." Bayesian Analysis 1(1) (2006): 145-168.
+
+Daniel Dempsey and Jason Wyse (2024). Bayesian Generalized Distributed Lag Regression with Variable Selection. arXiv: https://arxiv.org/abs/2403.03646
 }
 \author{
-Daniel Dempsey (\href{mailto:dempsed6@tcd.ie}{dempsed6@tcd.ie})
+Daniel Dempsey (\href{mailto:daniel.dempsey0@gmail.com}{daniel.dempsey0@gmail.com})
 }

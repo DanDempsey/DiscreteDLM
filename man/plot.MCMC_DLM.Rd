@@ -24,5 +24,5 @@ A ggplot object, except when type = 'lags', in which case it will be a list of g
 Provides some ggplot visualisations of the posterior from MCMC_DLM objects.
 }
 \author{
-Daniel Dempsey (\href{mailto:dempsed6@tcd.ie}{dempsed6@tcd.ie})
+Daniel Dempsey (\href{mailto:daniel.dempsey0@gmail.com}{daniel.dempsey0@gmail.com})
 }

@@ -51,7 +51,7 @@ A list containing the MCMC-derived posterior sample, as well as the data that we
 Fits a quantile regression model to a binary response dataset using Gibbs sampling and performs Bayesian variable selection.
 }
 \details{
-This function fits a quantile binary regression model via MCMC. Latent variable representation allows for Gibbs sampling of the parameters; see Benoit (2017). The algorithm also includes predictor inclusion uncertainty inference (inferred via a Metroplis step) adapted from Holmes and Held (2006). The parameters of interest for this model are the regression slopes (beta) and the binary predictor inclusion indicator (gamma).
+This function fits a quantile binary regression model via MCMC. Latent variable representation allows for Gibbs sampling of the parameters; see Benoit and Van den Poel (2017). The algorithm also includes predictor inclusion uncertainty inference (inferred via a Metroplis step) adapted from Holmes and Held (2006). The parameters of interest for this model are the regression slopes (beta) and the binary predictor inclusion indicator (gamma). For further details, see Dempsey and Wyse (2024).
 
 As this is a Bayesian model, priors must be specified. Beta has a Gaussian prior and gamma has a Bernoulli prior.
 }
@@ -69,8 +69,10 @@ summary( myfit )
 \references{
 Dries F. Benoit and Dirk Van den Poel. "bayesQR: A Bayesian approach to quantile regression." Journal of Statistical Software 76 (2017): 1-32.
 
-Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." (2006): 145-168.
+Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." Bayesian Analysis 1(1) (2006): 145-168.
+
+Daniel Dempsey and Jason Wyse (2024). Bayesian Generalized Distributed Lag Regression with Variable Selection. arXiv: https://arxiv.org/abs/2403.03646
 }
 \author{
-Daniel Dempsey (\href{mailto:dempsed6@tcd.ie}{dempsed6@tcd.ie})
+Daniel Dempsey (\href{mailto:daniel.dempsey0@gmail.com}{daniel.dempsey0@gmail.com})
 }
