@@ -1,4 +1,3 @@
-#' @export
 print.MCMC_DLM <- function( x, digits = 3, ... ) {
 
   cat( 'Mean of beta:\n' )
@@ -13,7 +12,6 @@ print.MCMC_DLM <- function( x, digits = 3, ... ) {
 
 }
 
-#' @export
 summary.MCMC_DLM <- function( object, digits = 3, ... ) {
 
   NB_flag <- inherits( object, 'NB_MCMC' )
@@ -37,23 +35,6 @@ summary.MCMC_DLM <- function( object, digits = 3, ... ) {
 
 }
 
-#' Visualises Results from MCMC_DLM Fits
-#'
-#' Provides some ggplot visualisations of the posterior from MCMC_DLM objects.
-#'
-#' @param x An MCMC_DLM object.
-#' @param type One of "beta", "gamma", "xi", or "lags". Partial matching is supported. Each type represents a graph for a different parameter: beta gives a ridgeplot of the regression slopes, gamma plots the mean probability of inclusion, and xi (negative binomial regression only) displays a kernel density estimate of the negative binomial stopping parameter.
-#' @param include_intercept Logical indicating if the intercept should be included in the graphs.
-#' @param print_output Logical indicating whether or not the ggplot objects should be printed to the screen.
-#' @param ... Currently unused.
-#' @author Daniel Dempsey (<daniel.dempsey0@gmail.com>)
-#' @return A ggplot object, except when type = 'lags', in which case it will be a list of ggplot objects. Will display the ggplot visual if print_output = TRUE.
-#' @import ggplot2
-#' @import ggridges
-#' @importFrom reshape2 melt
-#' @importFrom dplyr select
-#' @importFrom dlnm onebasis
-#' @export
 plot.MCMC_DLM <- function( x, type = 'beta', include_intercept = FALSE, print_output = TRUE, ... ) {
 
   plot_type <- pmatch( type, c('beta', 'gamma', 'xi', 'lags') )

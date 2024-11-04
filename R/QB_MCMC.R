@@ -1,43 +1,3 @@
-#' Binary Quantile Regression via MCMC
-#'
-#' Fits a quantile regression model to a binary response dataset using Gibbs sampling and performs Bayesian variable selection.
-#'
-#' @param formula Formula object to set the symbolic description of the model to be fitted.
-#' @param data Optional dataframe, list or environment containing the model variables.
-#' @param quantile The chosen quantile for regression.
-#' @param nsamp The desired sample size from the posterior. Set to 5000 by default.
-#' @param nburn The number of iterations of the MCMC to be discarded as burn-in. Set to 5000 by default.
-#' @param thin Thinning factor of the MCMC chain after burn-in. Set to 1 by default (no values discarded after burn-in).
-#' @param standardize Logical indicating if the data should be standardised prior to fitting the model to zero mean and unit variance. If there is no intercept, then only scaling is applied (with a warning). The posterior sample of beta is transformed to the original scale.
-#' @param prior_beta_mu Mean of the Gaussian prior for the regression coefficients, beta. Either a vector of length equal to the number of predictors or a single numeric to represent a constant vector.
-#' @param prior_beta_sigma Covariance matrix of the Gaussian prior for the regression coefficients, beta. Either a square matrix of dimension equal to the number of predictors or a single numeric to represent an isotropic covariance matrix.
-#' @param prior_gamma_p Probability parameter of the Bernoulli prior for the predictor inclusion parameter, gamma. Either a vector of length equal to the number of predictors or a single numeric, to represent that all predictors have the same prior probability of inclusion. Note that the model must have one predictor included by default; because of this the first value must be equal to 1 if a vector is given.
-#' @param init_beta Initial MCMC values for the beta parameters. Either a vector of length equal to the number of predictors or a single numeric representing the same starting value for each beta component.
-#' @param init_gamma Initial MCMC values for the gamma parameters. Either a vector of length equal to the number of predictors or a single numeric representing the same starting value for each gamma component. Note that the model must have one predictor included by default; because of this the first value must be equal to 1 if a vector is given.
-#' @return A list containing the MCMC-derived posterior sample, as well as the data that were used.
-#' @details This function fits a quantile binary regression model via MCMC. Latent variable representation allows for Gibbs sampling of the parameters; see Benoit and Van den Poel (2017). The algorithm also includes predictor inclusion uncertainty inference (inferred via a Metroplis step) adapted from Holmes and Held (2006). The parameters of interest for this model are the regression slopes (beta) and the binary predictor inclusion indicator (gamma). For further details, see Dempsey and Wyse (2024).
-#'
-#' As this is a Bayesian model, priors must be specified. Beta has a Gaussian prior and gamma has a Bernoulli prior.
-#' @references
-#' Dries F. Benoit and Dirk Van den Poel. "bayesQR: A Bayesian approach to quantile regression." Journal of Statistical Software 76 (2017): 1-32.
-#'
-#' Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." Bayesian Analysis 1(1) (2006): 145-168.
-#'
-#' Daniel Dempsey and Jason Wyse (2024). Bayesian Generalized Distributed Lag Regression with Variable Selection. arXiv: https://arxiv.org/abs/2403.03646
-#' @author Daniel Dempsey (<daniel.dempsey0@gmail.com>)
-#' @examples
-#' set.seed( 100 )
-#' binary_response <- dlnm::chicagoNMMAPS$cvd > 65
-#' predictors <- dplyr::select( dlnm::chicagoNMMAPS, c('dow', 'temp', 'dptp', 'o3') )
-#' X <- cbind( binary_response, predictors )
-#' X <- na.omit( X )
-#' arglag <- list( fun = 'bs', df = 4 )
-#' DLM_dat <- dataframe_DLM( X, lag = 40, dynamic_vars =  c('temp', 'dptp', 'o3'), arglag = arglag )
-#' myfit <- QB_MCMC( binary_response ~ ., data = DLM_dat, nsamp = 50, nburn = 50 )
-#' summary( myfit )
-#' @importFrom statmod rinvgauss
-#' @import utils
-#' @export
 QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
                      nburn = 1000, thin = 1, standardize = TRUE, prior_beta_mu = 0,
                      prior_beta_sigma = 100, prior_gamma_p = 0.5, init_beta = 0,
@@ -143,14 +103,14 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
   y <- model.response( model.frame(formula, data = data) )
   y_len <- length( y )
   y_max <- max( y ) + 1
-  rtrunc <- ifelse( y, TRUE, FALSE )
+  upper_tail <- ifelse( y, TRUE, FALSE )
 
   # Starting values for latent variables
   psi <- ( 1 - 2*quantile ) / ( quantile * (1 - quantile) )
   phi <- 2 / ( quantile * (1 - quantile) )
   delta <- 2 + ( ( psi^2 ) / phi )
 
-  ystar <- rTALD( n = y_len, rtrunc = rtrunc, mu = Xb, sigma = 1, p = quantile )
+  ystar <- rTALD( n = y_len, upper_tail = upper_tail, mu = Xb, sigma = 1, p = quantile )
   chi <- ( ystar - Xb )^2 / phi
   nu <- 1/rinvgauss( y_len, mean = sqrt(delta/chi), shape = delta )
   lambda <- ystar - ( psi * nu )
@@ -209,7 +169,7 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
 
     ### Update latent parameters
     # ystar
-    ystar <- rTALD( n = y_len, rtrunc = rtrunc, mu = Xb, sigma = 1, p = quantile )
+    ystar <- rTALD( n = y_len, upper_tail = upper_tail, mu = Xb, sigma = 1, p = quantile )
 
     # nu
     chi <- ( ystar - Xb )^2 / phi
