@@ -17,7 +17,7 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 1000, nburn = 1000, thin = 1,
 
   # Utility function for back/forward solving instead of explicit inversion using Cholesky
   backfor <- function( x, y ) {
-    backsolve( x, forwardsolve(t(x), y) )
+    backsolve( x, backsolve(x, y, transpose = TRUE) )
   }
 
   # Set dataset
@@ -102,7 +102,7 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 1000, nburn = 1000, thin = 1,
   # Variable index to link the dynamic variable gammas and apply starting value
   var_seq <- 1:nvar
   var_index_unique <- var_seq[-int_ind] # Used when proposing new gamma values
-  gammares[1, ][var_seq[init_gamma]] <- TRUE
+  gammares[1, ][as.logical(init_gamma)] <- TRUE
   gam <- gammares[1, ]
 
   X <- X_full[, gam, drop = FALSE]
@@ -134,9 +134,9 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 1000, nburn = 1000, thin = 1,
 
     ### Update xi
     # Poisson latent parameter: psi
-    invisible(capture.output( sum_psi <- .C('PSI_FUN', xi, as.integer(y), as.integer(y_len),
-                                            as.integer(0:(y_max-1)), as.integer(y_max), R,
-                                            as.integer(0), PACKAGE = 'DiscreteDLM' )[[7]] ))
+    sum_psi <- .C( 'PSI_FUN', xi, as.integer(y), as.integer(y_len),
+                   as.integer(0:(y_max-1)), as.integer(y_max), R,
+                   as.integer(0), PACKAGE = 'DiscreteDLM' )[[7]]
 
     # Negative Binomial overdispersion parameter: xi
     xires[i] <- xi <- rgamma( 1, prior_xi_shape + sum_psi, prior_xi_scale + sum(log(1 + exp(Xb))) )
@@ -165,8 +165,8 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 1000, nburn = 1000, thin = 1,
     gam_lprior <- dbinom( gam, 1, prior_gamma_p, log = TRUE )
     gam_lprior_star <- dbinom( gam_star, 1, prior_gamma_p, log = TRUE )
 
-    lkernel <- t(B) %*% t(Vi_U) %*% Vi_U %*% B/2
-    lkernel_star <- t(B_star) %*% t(Vi_star_U) %*% Vi_star_U %*% B_star/2
+    lkernel <- 0.5 * sum( (Vi_U %*% B)^2 )
+    lkernel_star <- 0.5 * sum( (Vi_star_U %*% B_star)^2 )
 
     lnum <- sum( ldet_V_star, ldet_V0i_star, lkernel_star, gam_lprior_star )
     ldenom <- sum( ldet_V, ldet_V0i, lkernel, gam_lprior )
@@ -192,9 +192,8 @@ NB_MCMC <- function( formula, data = NULL, nsamp = 1000, nburn = 1000, thin = 1,
     XtO <- t( X * omega )
     Vi_U <- chol( V0i + XtO%*%X )
     B <- backfor( Vi_U, V0ib0 + XtO%*%lambda )
-    V_U <- chol( chol2inv(Vi_U) )
 
-    betares[i, gam] <- B + t(V_U) %*% rnorm(sum(gam))
+    betares[i, gam] <- B + backsolve( Vi_U, rnorm(sum(gam)) )
     Xb <- X %*% betares[i, gam]
 
     # Update progress
