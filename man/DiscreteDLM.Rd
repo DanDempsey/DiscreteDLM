@@ -26,7 +26,7 @@ Daniel Dempsey <\email{daniel.dempsey0@gmail.com}>, with contributions and super
 }
 
 \references{
-Dempsey, Daniel, and Jason Wyse. 2024. “Bayesian Generalized Distributed Lag Regression with Variable Selection.” arXiv Preprint arXiv:2403.03646.
+Daniel Dempsey and Jason Wyse. 2025. "Bayesian Variable Selection in Distributed Lag Models: A Focus on Binary Quantile and Count Data Regressions." https://doi.org/10.48550/arXiv.2403.03646.
 }
 
 \keyword{package}

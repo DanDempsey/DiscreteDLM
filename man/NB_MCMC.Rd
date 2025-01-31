@@ -77,13 +77,13 @@ myfit <- NB_MCMC( cvd ~ ., data = DLM_dat, nsamp = 50, nburn = 50 )
 summary( myfit )
 }
 \references{
-Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." Bayesian Analysis 1(1) (2006): 145-168.
+Chris C. Holmes and Leonhard Held. 2006. "Bayesian auxiliary variable models for binary and multinomial regression." Bayesian Analysis 1(1): 145-168.
 
-Daniel Dempsey and Jason Wyse (2024). Bayesian Generalized Distributed Lag Regression with Variable Selection. arXiv: https://arxiv.org/abs/2403.03646
+Daniel Dempsey and Jason Wyse. 2025. "Bayesian Variable Selection in Distributed Lag Models: A Focus on Binary Quantile and Count Data Regressions." https://doi.org/10.48550/arXiv.2403.03646
 
-Jonathan Pillow and James Scott. "Fully Bayesian inference for neural models with negative-binomial spiking." Advances in neural information processing systems 25 (2012).
+Jonathan Pillow and James Scott. 2012. "Fully Bayesian inference for neural models with negative-binomial spiking." Advances in neural information processing systems 25.
 
-Mingyuan Zhou, Lingbo Li, David Dunson and Lawrence Carin. "Lognormal and gamma mixed negative binomial regression." Proceedings of the... International Conference on Machine Learning. International Conference on Machine Learning. Vol. 2012. NIH Public Access, 2012.
+Mingyuan Zhou, Lingbo Li, David Dunson and Lawrence Carin. 2012. "Lognormal and gamma mixed negative binomial regression." Proceedings of the... International Conference on Machine Learning. International Conference on Machine Learning. Vol. 2012. NIH Public Access.
 }
 \author{
 Daniel Dempsey (\href{mailto:daniel.dempsey0@gmail.com}{daniel.dempsey0@gmail.com})

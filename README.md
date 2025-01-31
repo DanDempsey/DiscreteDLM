@@ -20,7 +20,7 @@ DLM, and visualising the results.
 
 This document will provide a basic illustration of how the package is
 intended to be used. For more details on DLMs and the methods we use
-here, please see Dempsey and Wyse (2024).
+here, please see Dempsey and Wyse (2025).
 
 ## Installation
 
@@ -150,35 +150,35 @@ summary( nb_fit )
 #> ----- Summary of Negative Binomial Regression Results -----
 #> 
 #>                Mean 2.5th Quantile 97.5th Quantile Probability of Inclusion
-#> (Intercept)  -0.456         -0.655          -0.070                    1.000
-#> seasonSpring  0.000          0.000           0.000                    0.000
+#> (Intercept)  -0.462         -0.614          -0.145                    1.000
+#> seasonSpring  0.000          0.000           0.000                    0.002
 #> seasonSummer  0.000          0.000           0.000                    0.000
-#> seasonWinter  0.037          0.026           0.049                    1.000
+#> seasonWinter  0.038          0.026           0.049                    1.000
 #> temp.l1       0.000          0.000           0.000                    0.000
-#> temp.l2      -0.101         -0.111          -0.091                    1.000
-#> temp.l3       0.000          0.000           0.000                    0.018
-#> temp.l4       0.000          0.000           0.000                    0.018
+#> temp.l2      -0.102         -0.119          -0.092                    1.000
+#> temp.l3       0.000          0.000           0.000                    0.010
+#> temp.l4       0.000          0.000           0.000                    0.014
 #> temp.l5       0.000          0.000           0.000                    0.000
-#> temp.l6       0.000          0.000           0.000                    0.010
-#> temp.l7       0.002          0.000           0.028                    0.056
-#> pm10.l1       0.151          0.099           0.203                    1.000
+#> temp.l6       0.001          0.000           0.009                    0.026
+#> temp.l7       0.002          0.000           0.027                    0.090
+#> pm10.l1       0.152          0.108           0.196                    1.000
 #> pm10.l2       0.000          0.000           0.000                    0.000
 #> pm10.l3       0.000          0.000           0.000                    0.000
-#> pm10.l4       0.000          0.000           0.000                    0.000
-#> pm10.l5       0.094          0.063           0.126                    1.000
+#> pm10.l4       0.001          0.000           0.000                    0.012
+#> pm10.l5       0.092          0.057           0.123                    0.986
 #> pm10.l6       0.000          0.000           0.000                    0.000
-#> pm10.l7       0.000          0.000           0.000                    0.002
-#> o3.l1         0.037          0.021           0.055                    0.996
-#> o3.l2         0.000          0.000           0.000                    0.000
-#> o3.l3         0.000          0.000           0.000                    0.010
+#> pm10.l7       0.000          0.000           0.000                    0.000
+#> o3.l1         0.037          0.000           0.054                    0.972
+#> o3.l2         0.000          0.000           0.000                    0.006
+#> o3.l3         0.000          0.000           0.000                    0.000
 #> o3.l4         0.000          0.000           0.000                    0.000
-#> o3.l5         0.000          0.000           0.000                    0.000
+#> o3.l5         0.000          0.000           0.000                    0.012
 #> o3.l6         0.000          0.000           0.000                    0.000
 #> o3.l7         0.000          0.000           0.000                    0.000
 #> 
 #> xi:
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>   129.1   188.6   206.0   205.6   229.4   253.2
+#>   143.2   188.9   212.6   205.9   224.1   243.0
 ```
 
 We can also conveniently plot the output with “plot”. Since there are a
@@ -193,7 +193,7 @@ type = “beta” gives a ridgeplot of each of the regression coefficients:
 
 ``` r
 plot( nb_fit, type = 'beta', print_output = FALSE )
-#> Picking joint bandwidth of 0.00413
+#> Picking joint bandwidth of 0.00379
 ```
 
 <img src="man/figures/README-NB_regression_beta_plot-1.png" width="100%" />
@@ -256,15 +256,14 @@ regression, for example. Please see the help file for more details.
 
 ## References
 
-Dempsey, Daniel, and Jason Wyse. 2024. “Bayesian Generalized Distributed
-Lag Regression with Variable Selection.” arXiv Preprint
-arXiv:2403.03646.
+Daniel Dempsey and Jason Wyse. 2025. “Bayesian Variable Selection in
+Distributed Lag Models: A Focus on Binary Quantile and Count Data
+Regressions.” <https://doi.org/10.48550/arXiv.2403.03646>.
 
-Gasparrini, A. 2011. “Distributed Lag Linear and Non-Linear Models in R:
-The Package dlnm.” Journal of Statistical Software 43 (8): 1–20.
+Antonio Gasparrini. 2011. “Distributed Lag Linear and Non-Linear Models
+in R: The Package dlnm.” Journal of Statistical Software 43 (8): 1–20.
 <https://doi.org/10.18637/jss.v043.i08>.
 
-van Buuren, Stef, and Karin Groothuis-Oudshoorn. 2011. “mice:
-Multivariate Imputation by Chained Equations in r.” Journal of
-Statistical Software 45 (3): 1–67.
-<https://doi.org/10.18637/jss.v045.i03>.
+Stef van Buuren and Karin Groothuis-Oudshoorn. 2011. “mice: Multivariate
+Imputation by Chained Equations in r.” Journal of Statistical Software
+45 (3): 1–67. <https://doi.org/10.18637/jss.v045.i03>.

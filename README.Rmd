@@ -21,7 +21,7 @@ DiscreteDLM contains functionality for fitting and visualising Bayesian Distribu
 
 While these functions can be applied to any standard regression problem, the package was set up with DLMs in mind; the functions therein allow for an easy-to-use pipeline to go from defining the DLM, fitting the DLM, and visualising the results.
 
-This document will provide a basic illustration of how the package is intended to be used. For more details on DLMs and the methods we use here, please see Dempsey and Wyse (2024).
+This document will provide a basic illustration of how the package is intended to be used. For more details on DLMs and the methods we use here, please see Dempsey and Wyse (2025).
 
 ## Installation
 
@@ -110,9 +110,9 @@ Each of these functions returns the ggplot object that was used to print the out
 This covers the basic explanation of package functionality. In the case of binary data, you can use the "QB_MCMC" function to fit a quantile binary model in much the same way as we used NB_MCMC to fit a negative binomial model. In this case there is no stopping parameter, but the quantile must be specified. "quantile = 0.5" corresponds to median regression, for example. Please see the help file for more details.
 
 ## References
-Dempsey, Daniel, and Jason Wyse. 2024. “Bayesian Generalized Distributed Lag Regression with Variable Selection.” arXiv Preprint arXiv:2403.03646.
+Daniel Dempsey and Jason Wyse. 2025. “Bayesian Variable Selection in Distributed Lag Models: A Focus on Binary Quantile and Count Data Regressions.” https://doi.org/10.48550/arXiv.2403.03646.
 
-Gasparrini, A. 2011. “Distributed Lag Linear and Non-Linear Models in R: The Package dlnm.” Journal of Statistical Software 43 (8): 1–20. https://doi.org/10.18637/jss.v043.i08.
+Antonio Gasparrini. 2011. “Distributed Lag Linear and Non-Linear Models in R: The Package dlnm.” Journal of Statistical Software 43 (8): 1–20. https://doi.org/10.18637/jss.v043.i08.
 
-van Buuren, Stef, and Karin Groothuis-Oudshoorn. 2011. “mice: Multivariate Imputation by Chained Equations in r.” Journal of Statistical Software 45 (3): 1–67. https://doi.org/10.18637/jss.v045.i03.
+Stef van Buuren and Karin Groothuis-Oudshoorn. 2011. “mice: Multivariate Imputation by Chained Equations in r.” Journal of Statistical Software 45 (3): 1–67. https://doi.org/10.18637/jss.v045.i03.
 

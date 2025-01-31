@@ -6,7 +6,7 @@ Authors@R:
            comment = c(ORCID = "0000-0003-0899-5412")),
       person("Jason", "Wyse", , role = "ctb", comment = c(ORCID = "0000-0003-1391-7371")))
 Maintainer: Daniel Dempsey <daniel.dempsey0@gmail.com>
-Description: This package provides functions for fitting Bayesian Distributed Lag Models (DLMs) to longitudinal response data that is a count or binary. Count data is fit using negative binomial regression and binary is fit using quantile regression. The contribution of the lags are fit via b-splines. In addition, the functions also infer the predictor inclusion uncertainty. Multimomial models are not supported.
+Description: Tools for fitting Bayesian Distributed Lag Models (DLMs) to longitudinal response data that is a count or binary. Count data is fit using negative binomial regression and binary is fit using quantile regression. The contribution of the lags are fit via b-splines. In addition, infers the predictor inclusion uncertainty. Multimomial models are not supported. Based on Dempsey and Wyse (2025) <doi:10.48550/arXiv.2403.03646>.
 License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

@@ -74,11 +74,11 @@ myfit <- QB_MCMC( binary_response ~ ., data = DLM_dat, nsamp = 50, nburn = 50 )
 summary( myfit )
 }
 \references{
-Chris C. Holmes and Leonhard Held. "Bayesian auxiliary variable models for binary and multinomial regression." Bayesian Analysis 1(1) (2006): 145-168.
+Chris C. Holmes and Leonhard Held. 2006. "Bayesian auxiliary variable models for binary and multinomial regression." Bayesian Analysis 1(1): 145-168.
 
-Daniel Dempsey and Jason Wyse (2024). Bayesian Generalized Distributed Lag Regression with Variable Selection. arXiv: https://arxiv.org/abs/2403.03646
+Daniel Dempsey and Jason Wyse. 2025. "Bayesian Variable Selection in Distributed Lag Models: A Focus on Binary Quantile and Count Data Regressions." https://doi.org/10.48550/arXiv.2403.03646
 
-Dries F. Benoit and Dirk Van den Poel. "bayesQR: A Bayesian approach to quantile regression." Journal of Statistical Software 76 (2017): 1-32.
+Dries F. Benoit and Dirk Van den Poel. 2017. "bayesQR: A Bayesian approach to quantile regression." Journal of Statistical Software 76: 1-32.
 }
 \author{
 Daniel Dempsey (\href{mailto:daniel.dempsey0@gmail.com}{daniel.dempsey0@gmail.com})
