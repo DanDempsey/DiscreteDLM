@@ -16,7 +16,8 @@ NB_MCMC(
   prior_xi_scale = 1/50,
   init_beta = 0,
   init_gamma = FALSE,
-  init_xi = 1
+  init_xi = 1,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ NB_MCMC(
 \item{init_gamma}{Initial MCMC values for the gamma parameters. Either a vector of length equal to the number of predictors or a single numeric representing the same starting value for each gamma component.}
 
 \item{init_xi}{Initial MCMC value for xi.}
+
+\item{verbose}{Logical indicating if a progress report should be printed to the console during the run.}
 }
 \value{
 An "MCMC_DLM" object; a list containing the MCMC-derived posterior sample, as well as the data that were used.

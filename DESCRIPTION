@@ -2,9 +2,14 @@ Package: DiscreteDLM
 Title: Bayesian Distributed Lag Model Fitting for Binary and Count Response Data  
 Version: 1.0.0
 Authors@R: 
-    c(person("Daniel", "Dempsey", , "daniel.dempsey0@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0003-0899-5412")),
-      person("Jason", "Wyse", , role = "ctb", comment = c(ORCID = "0000-0003-1391-7371")))
+    c(person(given = "Daniel", family = "Dempsey", email = "daniel.dempsey0@gmail.com", 
+    role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0899-5412")),
+    person(given = "Jason", family = "Wyse", role = "ctb", 
+    comment = c(ORCID = "0000-0003-1391-7371")),
+    person(given = "Christian E.", family = "Galarza", role = "ctb", 
+    comment = "Author of the ald package, which this package derives some code from (see the COPYRIGHT file in the inst folder)."),
+    person(given = "Victor H.", family = "Lachos", role = "ctb", 
+    comment = "Author of the ald package, which this package derives some code from (see the COPYRIGHT file in the inst folder)."))
 Maintainer: Daniel Dempsey <daniel.dempsey0@gmail.com>
 Description: Tools for fitting Bayesian Distributed Lag Models (DLMs) to longitudinal response data that is a count or binary. Count data is fit using negative binomial regression and binary is fit using quantile regression. The contribution of the lags are fit via b-splines. In addition, infers the predictor inclusion uncertainty. Multimomial models are not supported. Based on Dempsey and Wyse (2025) <doi:10.48550/arXiv.2403.03646>.
 License: GPL-3

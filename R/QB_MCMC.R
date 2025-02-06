@@ -1,10 +1,12 @@
 QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
                      nburn = 1000, thin = 1, standardize = TRUE, prior_beta_mu = 0,
                      prior_beta_sigma = 100, prior_gamma_p = 0.5, init_beta = 0,
-                     init_gamma = FALSE ) {
+                     init_gamma = FALSE, verbose = TRUE ) {
 
   ### Initialize
-  cat( "Initializing MCMC algorithm...\n" )
+  if ( verbose ) {
+    cat( "Initializing MCMC algorithm...\n" )
+  }
   MCMC_length <- nsamp + nburn
 
   # Convenient alternative to base sample function; doesn't treat scalars differently to vectors
@@ -121,8 +123,10 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
   B <- backfor( Vi_U, V0ib0 + XtO%*%lambda )
 
   ### Main Loop
-  cat( 'Initialization complete. Running algorithm...\n' )
-  pb <- txtProgressBar( min = 2, max = MCMC_length, style = 3 )
+  if ( verbose ) {
+    cat( 'Initialization complete. Running algorithm...\n' )
+    pb <- txtProgressBar( min = 2, max = MCMC_length, style = 3 )
+  }
   for ( i in 2:MCMC_length ) {
 
     ### Update gamma
@@ -187,12 +191,16 @@ QB_MCMC <- function( formula, data = NULL, quantile = 0.5, nsamp = 1000,
     Xb <- X %*% betares[i, gam]
 
     # Update progress
-    setTxtProgressBar( pb, i )
+    if ( verbose ) {
+      setTxtProgressBar( pb, i )
+    }
 
   }
 
   ### Filter Markov chain and return result
-  cat( '\nAlgorithm complete.\n' )
+  if ( verbose ) {
+    cat( '\nAlgorithm complete.\n' )
+  }
 
   keep <- seq( nburn + 1, MCMC_length, thin )
   gamma_trunc <- gammares[keep, ]

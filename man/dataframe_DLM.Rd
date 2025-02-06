@@ -23,6 +23,9 @@ The purpose of this function is to streamline the preperation of the data for di
 
 If no dynamic variables are given, the input dataframe is returned unaltered with a warning. Otherwise, the function returns a \emph{dataframe_DLM} object, which is essentially treated like a standard dataframe but contains extra information to simplify the process of distributed lag modelling when using the \emph{NB_MCMC} or \emph{QB_MCMC} functions.
 }
+\value{
+The input is returned unchanged if no dynamic variables are given. Otherwise a \emph{dataframe_DLM} object is returned. See details.
+}
 \examples{
 X <- dplyr::select( dlnm::chicagoNMMAPS, c('cvd', 'dow', 'temp', 'dptp', 'o3') )
 X <- na.omit( X )

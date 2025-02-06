@@ -14,7 +14,8 @@ QB_MCMC(
   prior_beta_sigma = 100,
   prior_gamma_p = 0.5,
   init_beta = 0,
-  init_gamma = FALSE
+  init_gamma = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -41,6 +42,8 @@ QB_MCMC(
 \item{init_beta}{Initial MCMC values for the beta parameters. Either a vector of length equal to the number of predictors or a single numeric representing the same starting value for each beta component.}
 
 \item{init_gamma}{Initial MCMC values for the gamma parameters. Either a vector of length equal to the number of predictors or a single numeric representing the same starting value for each gamma component.}
+
+\item{verbose}{Logical indicating if a progress report should be printed to the console during the run.}
 }
 \value{
 An "MCMC_DLM" object; a list containing the MCMC-derived posterior sample, as well as the data that were used.

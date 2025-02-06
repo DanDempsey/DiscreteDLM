@@ -37,6 +37,9 @@ where
 \deqn{\rho_p(z) = z(p - I_{z<0})}
 These functions differ than the ones provided in the \emph{ald} package by vectorising the mu parameter. In addition we have implemented a function to sample from the truncated ALD (rTALD), which is needed for Bayesian quantile regression. Note that truncation is fixed at zero; the user only decides whether the negative or positive axis is discarded.
 }
+\value{
+Each function returns a vector. dALD, pALD and qALD returns the PDF, CDF and inverse CDF of the ALD respectively. rALD returns a random sample from the ALD distribution, and rTALD returns a random sample from the ALD truncated at 0.
+}
 \examples{
 set.seed( 100 )
 
